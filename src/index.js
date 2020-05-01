@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-function Square({value, activateSquare}) {
+function Square({value, handleClick}) {
     return (
       <button 
         className="square"
-        onClick={activateSquare}
+        onClick={handleClick}
       >
         { value }
       </button>
@@ -14,36 +14,33 @@ function Square({value, activateSquare}) {
 }
 
 function Board() {
+  const boardReducer = (state, actions) => {
+    switch(actions.type) {
+      //case 'next' :
+      //case 'status' :
+      case 'winner':
+        return { winner: actions.payload };
+      default: 
+        throw new Error();
+    }
+  } 
+
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [next, setNext] = useState('F');
   const [status, setStatus] = useState(`Next player: ${next}`);
-  const [winner, setWinner] = useState(null);
+  //const [winner, setWinner] = useState(null);
+  const [board, dispatch] = useReducer(boardReducer, { winner: null })
 
   useEffect(() => {
     calculateWinner();
-    if (winner) {
-      return setStatus(`We have a winner: ${winner}`);
+    if (board.winner) {
+      return setStatus(`We have a winner: ${board.winner}`);
     }
       setStatus(`Next player: ${next}`);
-  },[next, winner]);
+  },[next, board.winner]);
   
 
-  function renderSquare(i) { 
-    const nextSquares = [...squares];
-    return <Square 
-    value={squares[i]} 
-    activateSquare={() => { 
-              if (winner || squares[i]) {
-                return;
-              }
-              nextSquares[i] = next;
-              setSquares(nextSquares);
-              next == 'F' ? setNext('I') : setNext('F');
-              }}
-            />;
-  }
-
-  function calculateWinner() {
+  const  calculateWinner= () => {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -57,13 +54,27 @@ function Board() {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        console.log('should anounce')
-        setWinner(squares[a]);
-        console.log(winner);
+        //setWinner(squares[a]);
+        dispatch({type: 'winner', payload: squares[a]});
       }
     }
     return null;
   };
+
+  const handleClick = i => {
+    const nextSquares = [...squares];
+    if (board.winner || squares[i]) {
+      return;
+    }
+    nextSquares[i] = next;
+    setSquares(nextSquares);
+    next == 'F' ? setNext('I') : setNext('F');
+
+  }
+  
+  const renderSquare= i => <Square value={squares[i]} 
+                                   handleClick={() => handleClick(i)} 
+                           />;
 
   return (
       <div>
