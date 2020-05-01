@@ -57,7 +57,9 @@ function Board() {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        setWinner(squares[i]);
+        console.log('should anounce')
+        setWinner(squares[a]);
+        console.log(winner);
       }
     }
     return null;
